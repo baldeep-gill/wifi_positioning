@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_scanning"
+        android:icon="@drawable/baseline_add_location_24"
+        android:title="Scanning" />
+    <item
+        android:id="@+id/nav_positioning"
+        android:icon="@drawable/baseline_location_searching_24"
+        android:title="Positioning" />
+</menu>
