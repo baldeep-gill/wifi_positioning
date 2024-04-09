@@ -1,7 +1,9 @@
 package com.example.wifipositioningapp
 
 import android.content.Context
+import android.content.IntentFilter
 import android.database.sqlite.SQLiteDatabase
+import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -17,6 +19,10 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
 
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiReceiver: WifiReceiver
+    private val positioning: Positioning = Positioning()
+
+    private lateinit var scanResults: HashMap<Int, HashMap<String, Int>>
+    private lateinit var referencePoints: HashMap<Int, Pair<Int, Int>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,14 +36,47 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
         positioningText = view.findViewById(R.id.positioning_text)
         positioningButton = view.findViewById(R.id.positioning_button)
 
+        positioningButton.setOnClickListener {
+            scanResults = dbHelper.getAllScanResults(database)
+            referencePoints = dbHelper.getAllReferencePoints(database)
+            positioning.updateOfflineData(scanResults)
+
+            wifiManager.startScan()
+        }
+
         return view
     }
+    // Remember modularity of KNN vs WKNN
+    private fun calculatePosition(results: List<ScanResult>) {
+        val unseen = HashMap<String, Int>()
 
-    private fun startScan() {
-        positioningButton.setOnClickListener {
-            val values = dbHelper.getAllScanResults(database)
-
-            println(values)
+        for (result in results) {
+            unseen[result.BSSID] = result.level
         }
+
+        val position = positioning.calculatePosition(unseen, Measures.EUCLIDEAN, referencePoints, false)
+
+        positioningText.text = buildString {
+            append("Position: (${position.first}, ${position.second})")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        wifiReceiver = WifiReceiver(wifiManager, null, object: ScanCallBack {
+            override fun addScansCallback(results: List<ScanResult>) {
+                calculatePosition(results)
+            }
+        })
+
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+        requireContext().registerReceiver(wifiReceiver, intentFilter)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        requireContext().unregisterReceiver(wifiReceiver)
     }
 }

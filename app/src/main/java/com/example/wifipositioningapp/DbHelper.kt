@@ -96,6 +96,31 @@ class DbHelper(private val context: Context): SQLiteOpenHelper(context, DATABASE
         return id
     }
 
+    fun getAllReferencePoints(db: SQLiteDatabase): HashMap<Int, Pair<Int, Int>> {
+        val values = HashMap<Int, Pair<Int, Int>>()
+
+        val cursor = db.query(
+            /* table = */ REFERENCE_NAME,
+            /* columns = */ arrayOf(REFERENCE_ID, REFERENCE_X, REFERENCE_Y),
+            /* selection = */ null,
+            /* selectionArgs = */ null,
+            /* groupBy = */ null,
+            /* having = */ null,
+            /* orderBy = */ null
+        )
+
+        val idIndex = cursor.getColumnIndex(REFERENCE_ID)
+        val xIndex = cursor.getColumnIndex(REFERENCE_X)
+        val yIndex = cursor.getColumnIndex(REFERENCE_Y)
+
+        while (cursor.moveToNext()) {
+            values[cursor.getInt(idIndex)] = Pair(cursor.getInt(xIndex), cursor.getInt(yIndex))
+        }
+
+        cursor.close()
+        return values
+    }
+
     fun getAllScanResults(db: SQLiteDatabase): HashMap<Int, HashMap<String, Int>> {
         // 1. Get all RPs
         // 2. For each RP, get all the scans for that RP
