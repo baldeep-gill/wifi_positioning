@@ -14,6 +14,7 @@
         >
 
         <Button
+            android:id="@+id/positioning_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -21,6 +22,7 @@
             android:text="Perform Scan"/>
 
         <TextView
+            android:id="@+id/positioning_text"
             android:layout_marginTop="12dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

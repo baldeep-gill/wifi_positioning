@@ -96,37 +96,53 @@ class DbHelper(private val context: Context): SQLiteOpenHelper(context, DATABASE
         return id
     }
 
-    fun getAllScanResults(db: SQLiteDatabase): HashMap<String, Int> {
-        TODO("Not implemented yet!")
+    fun getAllScanResults(db: SQLiteDatabase): HashMap<Int, HashMap<String, Int>> {
         // 1. Get all RPs
         // 2. For each RP, get all the scans for that RP
-        // {1 -> {AC:4A -> -45}, 2 -> {BA:22 -> -23}}
-        /**
-        val projection = arrayOf(SCAN_ADDRESS, SCAN_LEVEL)
-        val selection = "$SCAN_RP_ID = ?"
-        val selectionArgs = arrayOf(rpid.toString())
+        // Intended output is a map of maps: {1 -> {AC:4A -> -45}, 2 -> {BA:22 -> -23}}
 
-        val cursor = db.query(
-            SCAN_NAME,
-            projection,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            null
+        val values: HashMap<Int, HashMap<String, Int>> = HashMap()
+
+        val refCursor = db.query(
+            /* table = */ REFERENCE_NAME,
+            /* columns = */ arrayOf(REFERENCE_ID),
+            /* selection = */ null,
+            /* selectionArgs = */ null,
+            /* groupBy = */ null,
+            /* having = */ null,
+            /* orderBy = */ null
         )
 
-        val map: HashMap<String, Int> = HashMap()
-        val addressIndex = cursor.getColumnIndex(SCAN_ADDRESS)
-        val levelIndex = cursor.getColumnIndex(SCAN_LEVEL)
+        val index = refCursor.getColumnIndex(REFERENCE_ID)
 
-        while(cursor.moveToNext()) {
-            map.put(cursor.getString(addressIndex), cursor.getInt(levelIndex))
+        while (refCursor.moveToNext()) {
+            val refPoint = refCursor.getInt(index)
+
+            val scanCursor = db.query(
+                /* table = */ SCAN_NAME,
+                /* columns = */ arrayOf(SCAN_ADDRESS, SCAN_LEVEL),
+                /* selection = */ "$SCAN_RP_ID = ?",
+                /* selectionArgs = */ arrayOf(refPoint.toString()),
+                /* groupBy = */ null,
+                /* having = */ null,
+                /* orderBy = */ null
+            )
+
+            val temp = HashMap<String, Int>()
+            val addressIndex = scanCursor.getColumnIndex(SCAN_ADDRESS)
+            val levelIndex = scanCursor.getColumnIndex(SCAN_LEVEL)
+
+            while (scanCursor.moveToNext()) {
+                temp[scanCursor.getString(addressIndex)] = scanCursor.getInt(levelIndex)
+            }
+            scanCursor.close()
+
+            values[refPoint] = temp
         }
 
-        cursor.close()
-        return map
-        */
+        refCursor.close()
+
+        return values
     }
 
     fun addNewReference(db: SQLiteDatabase, xVal: Int, yVal: Int): Int {
