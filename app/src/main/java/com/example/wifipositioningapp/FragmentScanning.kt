@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.fragment.app.Fragment
@@ -22,6 +24,11 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 
 class FragmentScanning(private val dbHelper: DbHelper, private val database: SQLiteDatabase) : Fragment() {
     private lateinit var wifiList: ListView
@@ -31,6 +38,12 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
 
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiReceiver: WifiReceiver
+
+    private val SCAN_NUMBER: Int = 4
+    private val SCAN_FREQ: Int = 7
+
+    private var scans: HashMap<String, ArrayList<Int>> = HashMap()
+    private var count: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,9 +109,23 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
             imm.hideSoftInputFromWindow(yText.windowToken, 0)
 
             val test = dbHelper.addNewReference(database, x, y)
-            Toast.makeText(requireContext(), test.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(requireContext(), test.toString(), Toast.LENGTH_SHORT).show()
 
+            scanButton.isEnabled = false
+            GlobalScope.launch { runScans() } // Start a coroutine that calls startScan()
+        }
+    }
+
+    private suspend fun runScans() {
+        repeat(SCAN_NUMBER) {
+            // wifiReceiver callback will handle averaging of scans and putting it into the database
             wifiManager.startScan()
+
+            delay((SCAN_FREQ * 1000).toLong())
+        }
+
+        scanButton.post {
+            scanButton.isEnabled = true
         }
     }
 
@@ -108,17 +135,31 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
         wifiReceiver = WifiReceiver(wifiManager, wifiList, object: ScanCallBack {
             override fun addScansCallback(results: List<ScanResult>) {
                 for (result in results) {
-                    dbHelper.updateOrAddNewScan(database, xText.text.toString().toInt(), yText.text.toString().toInt(), result.BSSID.toString(), result.level)
+                    val mac = result.BSSID.toString()
+                    if (scans.containsKey(mac)) { // If address is already in the map, update the corresponding list with the new level
+                        scans[mac] = (scans[mac]!!.plus(mutableListOf(result.level)) as java.util.ArrayList<Int>)
+                    } else {
+                        scans[mac] = (mutableListOf(result.level) as java.util.ArrayList<Int>) // Else make a new entry
+                    }
                 }
-                /**
-                 * TODO: Make multiple scans before saving the result to the database
-                 *
-                 * Maybe make the callback a function that saves a list of previous scan results.
-                 * When list reaches a certain length, average and then add to database and then clear the list.
-                 * Make sure it's unique for each rp.
-                 *
-                 * E.g. Put start scan on a 15 second loop and have this callback add to the list or update when ready?
-                 */
+
+                count += 1
+                Toast.makeText(requireContext(), "Completed scan $count", Toast.LENGTH_SHORT).show()
+
+                if (count == SCAN_NUMBER) {
+                    Toast.makeText(requireContext(), "Finished scans.", Toast.LENGTH_SHORT).show()
+                    for ((address, values) in scans) {
+                        dbHelper.updateOrAddNewScan(
+                            database,
+                            xText.text.toString().toInt(),
+                            yText.text.toString().toInt(),
+                            address,
+                            values.average().toInt()
+                        )
+                    }
+                    scans.clear()
+                    count = 0
+                }
             }
         })
         val intentFilter = IntentFilter()
