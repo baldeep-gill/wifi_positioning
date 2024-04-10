@@ -15,11 +15,14 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.switchmaterial.SwitchMaterial
 
 class FragmentPositioning(private val dbHelper: DbHelper, private val database: SQLiteDatabase) : Fragment() {
     private lateinit var positioningText: TextView
     private lateinit var positioningButton: Button
     private lateinit var measuresSpinner: Spinner
+    private lateinit var weightedSwitch: SwitchMaterial
 
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiReceiver: WifiReceiver
@@ -36,6 +39,7 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_positioning, container, false)
+
 
         positioningText = view.findViewById(R.id.positioning_text)
         positioningButton = view.findViewById(R.id.positioning_button)
@@ -58,6 +62,9 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
             wifiManager.startScan()
         }
 
+        weightedSwitch = view.findViewById(R.id.weighted_switch)
+
+
         return view
     }
     // Remember modularity of KNN vs WKNN
@@ -68,7 +75,7 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
             unseen[result.BSSID] = result.level
         }
 
-        val position = positioning.calculatePosition(unseen, Measures.getMeasureByName(measuresSpinner.selectedItem.toString()), referencePoints, false)
+        val position = positioning.calculatePosition(unseen, Measures.getMeasureByName(measuresSpinner.selectedItem.toString()), referencePoints, weightedSwitch.isChecked)
 
         positioningText.text = buildString {
             append("Position: (${position.first}, ${position.second})")

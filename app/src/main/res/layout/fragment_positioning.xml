@@ -27,6 +27,13 @@
             android:layout_height="48dp"
             android:layout_marginTop="8dp"/>
 
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/weighted_switch"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="Weighted?" />
+
         <TextView
             android:id="@+id/positioning_text"
             android:layout_marginTop="12dp"
