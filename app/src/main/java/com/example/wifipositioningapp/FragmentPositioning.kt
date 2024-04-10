@@ -10,12 +10,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 
 class FragmentPositioning(private val dbHelper: DbHelper, private val database: SQLiteDatabase) : Fragment() {
     private lateinit var positioningText: TextView
     private lateinit var positioningButton: Button
+    private lateinit var measuresSpinner: Spinner
 
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiReceiver: WifiReceiver
@@ -36,6 +40,16 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
         positioningText = view.findViewById(R.id.positioning_text)
         positioningButton = view.findViewById(R.id.positioning_button)
 
+        measuresSpinner = view.findViewById(R.id.spinner)
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.measures_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            measuresSpinner.adapter = adapter
+        }
+
         positioningButton.setOnClickListener {
             scanResults = dbHelper.getAllScanResults(database)
             referencePoints = dbHelper.getAllReferencePoints(database)
@@ -54,7 +68,7 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
             unseen[result.BSSID] = result.level
         }
 
-        val position = positioning.calculatePosition(unseen, Measures.EUCLIDEAN, referencePoints, false)
+        val position = positioning.calculatePosition(unseen, Measures.getMeasureByName(measuresSpinner.selectedItem.toString()), referencePoints, false)
 
         positioningText.text = buildString {
             append("Position: (${position.first}, ${position.second})")

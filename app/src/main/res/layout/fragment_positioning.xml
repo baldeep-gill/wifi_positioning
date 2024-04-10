@@ -19,7 +19,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:backgroundTint="#5FA4D8"
-            android:text="Perform Scan"/>
+            android:text="Perform Scan" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"/>
 
         <TextView
             android:id="@+id/positioning_text"
