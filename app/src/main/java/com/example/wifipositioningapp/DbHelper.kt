@@ -46,6 +46,10 @@ class DbHelper(private val context: Context): SQLiteOpenHelper(context, DATABASE
         onUpgrade(db, oldVersion, newVersion)
     }
 
+    fun deleteAll(db: SQLiteDatabase): Int {
+        return db.delete(REFERENCE_NAME, null, null) + db.delete(SCAN_NAME, null, null)
+    }
+
     /**
      Returns the id of the record with x = [xVal] and y = [yVal] or -1 if does not exist
      */

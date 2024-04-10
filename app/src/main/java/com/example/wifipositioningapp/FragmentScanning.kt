@@ -35,6 +35,7 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
     private lateinit var xText: EditText
     private lateinit var yText: EditText
     private lateinit var scanButton: Button
+    private lateinit var deleteButton: Button
 
     private lateinit var wifiManager: WifiManager
     private lateinit var wifiReceiver: WifiReceiver
@@ -78,6 +79,7 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
         xText = view.findViewById(R.id.editX)
         yText = view.findViewById(R.id.editY)
         scanButton = view.findViewById(R.id.scanButton)
+        deleteButton = view.findViewById(R.id.database_delete)
 
         startScan()
 
@@ -96,6 +98,10 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
         }
         xText.addTextChangedListener(watcher)
         yText.addTextChangedListener(watcher)
+
+        deleteButton.setOnClickListener {
+            Toast.makeText(requireContext(), "${dbHelper.deleteAll(database)} rows deleted.", Toast.LENGTH_SHORT).show()
+        }
 
         scanButton.setOnClickListener {
             val x = xText.text.toString().toInt()

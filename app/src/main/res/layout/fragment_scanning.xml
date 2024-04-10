@@ -7,39 +7,55 @@
     android:layout_margin="8dp"
     tools:context=".FragmentScanning">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/editX"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="3"
-            android:gravity="center"
-            android:hint="x val"
-            android:inputType="number"
-            tools:ignore="TouchTargetSizeCheck"
-            android:importantForAutofill="no" />
+            android:layout_alignParentStart="true"
+            android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/editY"
+            <EditText
+                android:id="@+id/editX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="3"
+                android:gravity="center"
+                android:hint="x val"
+                android:inputType="number"
+                tools:ignore="TouchTargetSizeCheck"
+                android:importantForAutofill="no"
+                />
+
+            <EditText
+                android:id="@+id/editY"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="y val"
+                android:ems="3"
+                android:inputType="number"
+                android:gravity="center"
+                tools:ignore="TouchTargetSizeCheck"
+                android:importantForAutofill="no"
+                android:layout_weight="0"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/database_delete"
+            android:text="DELETE SCANS"
+            android:backgroundTint="#D85F5F"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="y val"
-            android:ems="3"
-            android:inputType="number"
-            android:gravity="center"
-            tools:ignore="TouchTargetSizeCheck"
-            android:importantForAutofill="no" />
+            android:layout_alignParentEnd="true"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <Button
         android:id="@+id/scanButton"
         android:text="Scan"
-        android:backgroundTint="#D85F5F"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
