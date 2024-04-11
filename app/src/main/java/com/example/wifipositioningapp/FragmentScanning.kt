@@ -19,6 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
@@ -138,8 +139,20 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
     override fun onResume() {
         super.onResume()
 
-        wifiReceiver = WifiReceiver(wifiManager, wifiList, object: ScanCallBack {
+        wifiReceiver = WifiReceiver(wifiManager, object: ScanCallBack {
             override fun addScansCallback(results: List<ScanResult>) {
+                // Display data to list view
+                val resultList: ArrayList<String> = ArrayList()
+
+                for (scanResult in results) {
+                    //                sb!!.append("\n").append(scanResult.SSID).append(" - ").append(scanResult.level)
+                    resultList.add(scanResult.SSID.toString() + ":" + scanResult.BSSID + " - (" + scanResult.level + ")")
+                }
+                //            Toast.makeText(context, sb, Toast.LENGTH_SHORT).show()
+                val arrayAdapter: ArrayAdapter<*> = ArrayAdapter(context!!.applicationContext, android.R.layout.simple_list_item_1, resultList.toArray())
+                wifiList.adapter = arrayAdapter
+
+                // Add scans to buffer
                 for (result in results) {
                     val mac = result.BSSID.toString()
                     if (scans.containsKey(mac)) { // If address is already in the map, update the corresponding list with the new level
@@ -152,6 +165,7 @@ class FragmentScanning(private val dbHelper: DbHelper, private val database: SQL
                 count += 1
                 Toast.makeText(requireContext(), "Completed scan $count", Toast.LENGTH_SHORT).show()
 
+                // Check if required number of scans have been completed
                 if (count == SCAN_NUMBER) {
                     Toast.makeText(requireContext(), "Finished scans.", Toast.LENGTH_SHORT).show()
                     for ((address, values) in scans) {

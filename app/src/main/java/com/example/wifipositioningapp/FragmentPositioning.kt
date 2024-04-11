@@ -85,7 +85,7 @@ class FragmentPositioning(private val dbHelper: DbHelper, private val database: 
     override fun onResume() {
         super.onResume()
 
-        wifiReceiver = WifiReceiver(wifiManager, null, object: ScanCallBack {
+        wifiReceiver = WifiReceiver(wifiManager, object: ScanCallBack {
             override fun addScansCallback(results: List<ScanResult>) {
                 calculatePosition(results)
             }

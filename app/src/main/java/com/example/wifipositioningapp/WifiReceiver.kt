@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 
-class WifiReceiver(private var wifiManager: WifiManager, private var fragmentListView: ListView?, private val callback: ScanCallBack): BroadcastReceiver() {
+class WifiReceiver(private var wifiManager: WifiManager, private val callback: ScanCallBack): BroadcastReceiver() {
     private lateinit var sb: StringBuilder
 
     @SuppressLint("MissingPermission")
@@ -20,18 +20,6 @@ class WifiReceiver(private var wifiManager: WifiManager, private var fragmentLis
 //            sb = java.lang.StringBuilder()
             val scanResults: List<ScanResult> = wifiManager.scanResults
             callback.addScansCallback(scanResults)
-
-            if (fragmentListView != null) {
-                val resultList: ArrayList<String> = ArrayList()
-
-                for (scanResult in scanResults) {
-    //                sb!!.append("\n").append(scanResult.SSID).append(" - ").append(scanResult.level)
-                    resultList.add(scanResult.SSID.toString() + ":" + scanResult.BSSID + " - (" + scanResult.level + ")")
-                }
-    //            Toast.makeText(context, sb, Toast.LENGTH_SHORT).show()
-                val arrayAdapter: ArrayAdapter<*> = ArrayAdapter(context!!.applicationContext, android.R.layout.simple_list_item_1, resultList.toArray())
-                fragmentListView!!.adapter = arrayAdapter
-            }
         }
     }
 }
